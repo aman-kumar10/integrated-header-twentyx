@@ -59,7 +59,8 @@ header.header .main-navbar-wrapper .navbar-nav a::before {
     position: absolute;
     width: 0%;
     height: 2px;
-    background-color: #004fac;
+    /* background-color: #004fac; */
+    background-color: transparent;
     bottom: 0;
     left: 0;
     transition: all .3s ease-in;
@@ -3246,7 +3247,7 @@ li#Secondary_Navbar-Account ul.dropdown-menu.dropdown-menu-right li a {
 
 .fast-hosting-theme-section {
     background-color: #f2f5ff;
-    padding: 60px 0px 200px;
+    padding: 70px 0px 200px;
 }
 .fast-hosting-theme-content {
     padding-top: 25px;
@@ -8253,8 +8254,10 @@ header.header .navbar .right-part-20i a.cartbtn-20i{
     border-color: #4576b0;
 }
 body header.header .main-navbar-wrapper .navbar-nav a {
-    font-size: 16px;
-    margin: 0px 10px;
+    font-size: 15px;
+    margin: 2px 0px 0px 0px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif !important;
 }
 #footer ul.nav.justify-content-center.justify-content-lg-start .nav-item:last-child {
     margin-left: 14px;
@@ -9657,3 +9660,55 @@ form#frmCheckout div#default-captcha-domainchecker p {
     margin-bottom: 15px;
 }
 
+.top_header {
+    margin: 5px !important;
+}
+a.signup_btn.manage_account {
+    margin-top: 6px !important;
+    margin-right: 16px !important;
+}
+.customHeadernew .contact_sales {
+    font-weight: 400 !important;
+    font-size: 13px !important;
+    padding: 14px 21px !important;
+}
+.primary-flyout-menu-section .nav-title a {
+font-weight:700 !important;
+    font-size: 18px !important;
+}
+.login_logout .searchbar-icon .fa-times{
+    margin-top: -9px !important;
+}
+.login_logout .searchbar-input {
+    font-family: 'Inter', sans-serif !important;
+}
+ul.n_footer_nav li a:hover {
+    color: #8bc037 !important;
+    text-decoration: none;
+}
+.login_logout .searchbar-open input::placeholder {
+color: #cdc5c7;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*  */
+.textwidget p {
+    color: #bdbdbd !important;
+}
+.footer-top-section .col-sm-3 {
+    -ms-flex: 0 0 50%;
+    flex: 0 0 50%;
+    max-width: 50%;
+    margin-bottom: 35px;
+}

@@ -168,20 +168,92 @@
 		{/if}
 		<div
 			class="navbar navbar-expand-xl main-navbar-wrapper {if $loggedin}login-20i-header{else}not-login-20i-header{/if}">
+			{if !$loggedin}
+				<div class="navbar navbar-light mobile-bar">
+					<div class="container">
+					<!--
+						<a class="navbar-brand mr-3" href="https://whmcsglobalservices.com">
+							
+							{if $assetLogoPath}
+								<img src="{$assetLogoPath}" alt="{$companyname}" class="logo-img">
+							{else}
+								{$companyname}
+							{/if}
+							
+						</a>
+						-->
+						<form method="post" action="{routePath('knowledgebase-search')}"
+							class="form-inline ml-auto form-knowldegbase-20i w-hidden">
+							<div class="input-group search d-none d-xl-flex">
+								<div class="input-group-prepend">
+									<button class="btn btn-default" type="submit">
+										<i class="fas fa-search"></i>
+									</button>
+								</div>
+								<input class="form-control appended-form-control font-weight-light" type="text"
+									name="search" placeholder="{lang key="searchOurKnowledgebase"}...">
+							</div>
+						</form>
+						<ul class="navbar-nav toolbar top-nav-20i">
+							<li class="nav-item ml-3">
+								<a class="btn nav-link cart-btn" onclick="triggerSearchButtonToggle(this);">
+									<i class="fas fa-search fa-fw"></i>
+								</a>
+							</li>
+							<li class="nav-item ml-3">
+								<a class="btn nav-link cart-btn" href="cart.php?a=view">
+									<i class="far fa-shopping-cart fa-fw"></i>
+									<span id="cartItemCount" class="badge badge-info">{$cartitemcount}</span>
+									<span class="sr-only">{lang key="carttitle"}</span>
+								</a>
+							</li>
+							<li class="nav-item ml-3 d-xl-none">
+								<button class="btn nav-link" type="button" data-toggle="collapse" data-target="#mainNavbar">
+									<span class="fas fa-bars fa-fw"></span>
+								</button>
+							</li>
+						</ul>
+					</div>
+				</div>
+			{/if}
 			<div class="container">
-				{if !$loggedin}
-					<a class="navbar-brand mr-3" href="https://whmcsglobalservices.com"></a>
-				{/if}
-				{if !$loggedin}
-					{include file="$template/includes/CustomNavbar.tpl" navbar=$primaryNavbar}
-				{/if}
-				<ul id="nav" class="navbar-nav ml-auto {if $loggedin}login-20i-clientarea{/if}">
-					{if $loggedin}
-						{include file="$template/includes/navbar.tpl" navbar=$primaryNavbar}
+				<div class="collapse navbar-collapse" id="mainNavbar">
+					<!--
+					<form method="post" action="{routePath('knowledgebase-search')}" class="d-xl-none">
+						<div class="input-group search w-100 mb-2">
+							<div class="input-group-prepend">
+								<button class="btn btn-default" type="submit">
+									<i class="fas fa-search"></i>
+								</button>
+							</div>
+							<input class="form-control prepended-form-control" type="text" name="search"
+								placeholder="{lang key="searchOurKnowledgebase"}...">
+						</div>
+					</form>
+					-->
+				
+					{if !$loggedin}
+						<a class="navbar-brand mr-3" href="https://whmcsglobalservices.com">
+							<!--
+							{if $assetLogoPath}
+								<img src="{$assetLogoPath}" alt="{$companyname}" class="logo-img">
+							{else}
+								{$companyname}
+							{/if}
+							-->
+						</a>
 					{/if}
-				</ul>
-				{if $loggedin}
-					<div class="collapse navbar-collapse" id="mainNavbar">
+					<ul id="nav" class="navbar-nav ml-auto {if $loggedin}login-20i-clientarea{/if}">
+						{if $loggedin}
+							{include file="$template/includes/navbar.tpl" navbar=$primaryNavbar}
+
+						{/if}
+						{if !$loggedin}
+							{include file="$template/includes/CustomNavbar.tpl" navbar=$primaryNavbar}
+
+						{/if}
+					</ul>
+					{if $loggedin}
 						<div class="user-detail-20i">
 							<span class="span-logged-in">Logged in as:</span>
 							<a href="{$WEB_ROOT}/clientarea.php?action=details" class="btn btn-active-client">
@@ -198,8 +270,34 @@
 								<i class="fad fa-random"></i>
 							</a>
 						</div>
-					</div>
-				{/if}
+					{else}
+						<!--
+						<form method="post" action="{routePath('knowledgebase-search')}"
+							class="form-inline ml-auto form-knowldegbase-20i-without-login w-hidden">
+							<div class="input-group search d-none d-xl-flex">
+								<div class="input-group-prepend">
+									<button class="btn btn-default" type="submit">
+										<i class="fas fa-search"></i>
+									</button>
+								</div>
+								<input class="form-control appended-form-control font-weight-light" type="text"
+									name="search" placeholder="{lang key="searchOurKnowledgebase"}...">
+							</div>
+						</form>
+						<div class="right-part-20i">
+							<a class="search-20i" onclick="triggerSearchButtonToggleWithoutLogin(this);"><i
+									class="fas fa-search fa-fw"></i></a>
+							<a class="btn nav-link cart-btn cartbtn-20i" href="cart.php?a=view">
+								<i class="far fa-shopping-cart fa-fw"></i>
+								<span id="cartItemCount" class="badge badge-info">{$cartitemcount}</span>
+								<span class="sr-only">{lang key="carttitle"}</span>
+							</a>
+							<a href="{$WEB_ROOT}/clientarea.php" class="login-btn-20i">{$LANG.login}</a>
+							<a href="{$WEB_ROOT}/register.php" class="register-btn-20i">{$LANG.register}</a>
+						</div>
+						-->
+					{/if}
+				</div>
 			</div>
 		</div>
 	</header>

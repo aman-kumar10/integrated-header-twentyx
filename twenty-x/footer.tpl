@@ -16,7 +16,80 @@
                     <section class="footer-top-section">
                     <div class="container">
                         <div class="row">
-                
+                <div class="col-12 footer-accordian">
+              <div id="accordion" class="whmaccordion">
+                <div class="card">
+                  <div class="card-header" id="headingOne">
+                    <div class="mb-0">
+                      <button class="d-flex align-items-center justify-content-between btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                      <span class="widget-new-title">COMPANY</span>
+                        <span class="fa-stack fa-sm">
+                          <i class="fa fa-plus fa-stack-1x fa-inverse"></i>
+                        </span>
+                      </button>
+                  </div>
+                  </div>
+                  <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                    <div class="card-body">
+                      <ul>
+                        <li><a href="https://whmcsglobalservices.com/about-whmcs-global-services/">About Us</a></li>
+                        <li><a href="https://members.whmcsglobalservices.com/submitticket.php?step=2&amp;deptid=5" rel="nofollow">Contact Us</a></li>
+                        <li><a href="https://whmcsglobalservices.com/how-to-pay/">How To Pay</a></li>
+                        <li><a href="https://members.whmcsglobalservices.com/clientarea.php" rel="nofollow">Login &amp;</a>  <a href="https://members.whmcsglobalservices.com/register.php" rel="nofollow">Sign Up</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-header" id="headingTwo">
+                    <div class="mb-0">
+                      <button class="d-flex align-items-center justify-content-between btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                      <span class="widget-new-title">OUR SERVICES</span>
+                        <span class="fa-stack fa-2x">
+                          <i class="fa fa-plus fa-stack-1x fa-inverse"></i>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                  <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                    <div class="card-body">
+                      <ul>
+                        <li><a href="/installation-services/">Installation Services</a></li>
+                        <li><a href=" /upgrade-services/">Upgrade Services</a></li>
+                        <li><a href="/whmcs-custom-development/">Theme Customization</a></li>
+                        <li><a href="/whmcs-custom-development/">Custom Development</a></li>
+                        <li><a href=" /third-party-installation/">Third Party Installation</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-header" id="headingThree">
+                    <div class="mb-0">
+                      <button class="d-flex align-items-center justify-content-between btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                      <span class="widget-new-title">WHMCS MODULE</span>
+                        <span class="fa-stack fa-2x">
+                          <i class="fa fa-plus fa-stack-1x fa-inverse"></i>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                  <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                    <div class="card-body">
+                      <ul>
+                        <li><a href="/vmware-whmcs-module/">VMware WHMCS Module</a></li>
+                        <li><a href="/whmcs-owncloud-module/">OwnCloud WHMCS Module</a></li>
+                        <li><a href="/whmcs-cloudflare-module/">CloudFlare WHMCS Module </a></li>
+                        <li><a href="/ovh-soyoustart-whmcs-module/">OVH WHMCS Module</a></li>
+                        <li><a href="/observium-whmcs-module/">Observium WHMCS Module</a></li>
+                        <li><a href="/nextcloud-whmcs-module/">Nextcloud WHMCS Module</a></li>
+
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
                             <div class="col-sm-2 footer-content-hide">
                                 <aside id="text-3" class="widget widget_text">
                                     <h3 class="widget-new-title">COMPANY</h3>

@@ -69,12 +69,16 @@ jQuery(document).ready(function () {
       searchbar.addClass("searchbar-open");
       jQuery("#execphp-2").hide();
       jQuery(".login_logout ").css("width", "100%");
+      jQuery(".login_logout ").css("justify-content", "center");
+      jQuery(".login_logout ").css("padding-left", "480px");
       inputBox.focus();
       isOpen = !0;
     } else {
       searchbar.removeClass("searchbar-open");
       jQuery("#execphp-2").show();
       jQuery(".login_logout ").css("width", "auto");
+      jQuery(".login_logout ").css("justify-content", "start");
+      jQuery(".login_logout ").css("padding-left", "0px");
       inputBox.focusout();
       isOpen = !1;
     }

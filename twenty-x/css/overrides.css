@@ -217,7 +217,7 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     font-size: 16px;
     color: #fff;
     padding-bottom: 20px;
-    font-family: Inter;
+    /* font-family: Inter; */
     margin: 0;
     text-align: left;
     margin-left: 31px;
@@ -296,7 +296,7 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     font-size: 13px;
     text-align: center;
     margin-bottom: 10px;
-    font-family: Inter;
+    /* font-family: Inter; */
   }
   
   ul.n_footer_nav li {
@@ -309,7 +309,7 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     font-size: 13px;
     margin: 0 !important;
     padding: 0;
-    font-family: Inter !important;
+    /* font-family: Inter !important; */
     line-height: 24px;
     letter-spacing: 0.3px;
   }
@@ -526,7 +526,6 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     letter-spacing: 0.01em;
     z-index: 999;
     margin-left: auto;
-    justify-content: flex-end;
     position: absolute;
     right: 0;
   }
@@ -638,10 +637,10 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     white-space: nowrap;
   }
   
-  .customHeadernew .nav-masthead ul.navbar-nav li {
+  /* .customHeadernew .nav-masthead ul.navbar-nav li {
     margin: 0 3px;
    
-  }
+  } */
   
   .customHeadernew .nav-masthead ul.navbar-nav li.product-tab .dropdown-menu-own {
     left: -16rem;
@@ -741,7 +740,7 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
   }
   
   .customHeadernew #execphp-2 {
-    margin-left: 35px;
+    /* margin-left: 35px; */
     z-index: 9999;
   }
   
@@ -983,6 +982,13 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
   .login_logout .searchbar-input,
   .login_logout .searchbar-submit,
   .login_logout .searchbar.searchbar-open,
+  .top_header .navbar-light .navbar-toggler {
+    display: block;
+    position: absolute;
+    left: 37px !important;
+    right: unset !important;
+    border: transparent;
+}
   
   
   /* .login_logout .searchbar.searchbar-open {
@@ -996,11 +1002,12 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
   
   
   .login_logout .searchbar-icon i {
-    font-size: 20px;
+    font-size: 17px;
+    margin-top: -1px;
   }
   
   .signup_btn.manage_account .fas.fa-user {
-    font-size: 20px;
+    font-size: 17px;
 }
 
 
@@ -1029,11 +1036,13 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
   
   .login_logout .searchbar-icon,
   .login_logout .searchbar-submit {
-    top: -2px;
+    top: 0px;
     display: flex !important;
     align-items: center;
     justify-content: center;
     border: 0;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
   }
   
   .login_logout .searchbar.searchbar-open i.fa.fa-times {
@@ -1388,8 +1397,19 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
       width: 22%;
     }
   }
-  
+  @media(min-width: 768px){
+    .footer-accordian {
+      display: none;
+    }
+  }
   @media (max-width: 767px) {
+    .footer-content-hide{
+      display: none;
+    }
+    .footer-accordian {
+      display: block;
+      padding: 0;
+  }
     .customHeadernew footer .footer_page_link a,
     .customHeadernew footer p.copy,
     .t-r-btn {
@@ -1808,10 +1828,6 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
       display: none;
     }
   
-    .customHeadernew .navbar-toggleable-md.navbar-light a span {
-      font-size: 0;
-    }
-  
     .customHeadernew .dropdown-menu-own .tabbable .col-md-9 {
       max-width: calc(100% - 60px);
       flex: 0 0 100%;
@@ -1843,7 +1859,7 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
   
     body header.customHeadernew .contact_sales {
       padding: 7px 12px;
-      height: 32px;
+      /* height: 32px; */
       text-align: center;
     }
   
@@ -1893,11 +1909,15 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
       margin-right: 0;
     }
   
-    .custom-logo {
+    /* .custom-logo {
       display: block;
       margin-left: 45px !important;
     }
-  
+   */
+   .custom-logo {
+        display: block;
+        margin-left: 0;
+    }
     .toogle-btn #trigger i {
       color: #292929;
     }
@@ -1905,6 +1925,7 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     .header.customHeadernew {
       background: #fff !important;
     }
+
   }
   
   @media screen and (max-width: 375px) {
@@ -3332,7 +3353,9 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     font-size: 16px;
     margin-bottom: .09rem;
     float: left;
-    width: 91%
+    width: 91%;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
   }
   
   .flyout-link-meta {
@@ -3343,7 +3366,9 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     top: -7px;
     vertical-align: top;
     padding: 0;
-    clear: both
+    clear: both;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
   }
   
   .flyout-link-meta a {
@@ -4330,16 +4355,19 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     }
   
     .customHeadernew .navbar-nav .nav-item.product-deals-tab a {
-        color: #fff!important;
-        background: #be4e04;
-        border-radius: 3px;
-        font-size: 13px;
-        margin-left: 10px;
-        padding: 4px 8px!important
+      color: #fff!important;
+      background: #be4e04;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-top: 5px;
+      margin-left: 10px;
+      padding: 3px 7px!important;
     }
   }
   
+  
   @media(max-width: 991px) {
+
     .hostx-banner .list-inline.ver-ul li a,.hostx-banner-versiondata .list-inline.ver-ul li a {
         white-space:pre-wrap;
         display: grid;
@@ -4381,6 +4409,42 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
         font-weight: 500;
         color: #cddc39!important
     }
+    .top_header .navbar-light .navbar-toggler {
+        display: block;
+        position: absolute;
+        left: 37px;
+        right: unset;
+        border: transparent;
+    }
+    body header.customHeadernew .contact_sales {
+      padding: 12px 12px;
+    }
+    .nav-masthead:has(.navbar-collapse.collapse.show) {
+        display: block;
+    }
+ 
+    div#navbarNavDropdown {
+        position: absolute;
+        left: 0;
+        background: #fff;
+        width: 100%;
+        top: 70px;
+    }
+    
+    header.header .main-navbar-wrapper .navbar-nav a {
+        margin-left: 0;
+        padding: 10px 8px;
+        font-size: 18px !important;
+    }
+ 
+    ul.navbar-nav {
+        padding: 20px;
+    }
+    nav#mp-menu {
+      display: none;
+    }
+
+ 
   }
   
   @media(max-width: 767px) {
@@ -4627,13 +4691,12 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
     letter-spacing: .01em;
     z-index: 999;
     margin-left: auto;
-    justify-content: flex-end;
     position: absolute;
     right: 0
   }
   .customHeadernew .login_logout,.customHeadernew nav.navbar-toggleable-md,.page-template-page-home ul.bnr-ser-list {
     align-items: center;
-    display: flex
+    display: flex;
   }
   
   .login_logout a.signup_btn,.login_logout a.signup_btn i {
@@ -4662,12 +4725,13 @@ li.nav-item.dropdown.product-tab.show .dropdown-menu {
   }
 
   .login_logout .searchbar.searchbar-open {
-    width: 33%;
+    width: 50%;
     position: relative;
-    border: 1px solid #eae2e2;
     right: 45px;
     margin: 0;
-    overflow: visible
+    overflow: visible;
+    background-color: #f1f4f6;
+    color: #000;
   }
 
 
