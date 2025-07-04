@@ -1,0 +1,4 @@
+name: "Twenty-X"
+author: "WHMCS GLOBAL SERVICES"
+config:
+  parent: twenty-one

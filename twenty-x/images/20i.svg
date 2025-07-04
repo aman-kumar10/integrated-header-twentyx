@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="70" height="35" viewBox="0 0 70 35">
+  <defs>
+    <style>
+      .cls-1 {
+        font-size: 46px;
+        fill: #004fac;
+        font-family: "Abril Fatface";
+      }
+
+      .cls-2 {
+        fill: #2e3442;
+      }
+    </style>
+  </defs>
+  <text id="_20i" data-name="20i" class="cls-1" x="-1.5" y="33.842">20<tspan class="cls-2">i</tspan></text>
+</svg>

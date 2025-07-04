@@ -1,0 +1,652 @@
+<?php
+use WHMCS\Module\Addon\partial_payment\Helper;
+
+use Illuminate\Database\Capsule\Manager as Capsule;
+
+$helper = new Helper();
+# Logo
+$logoFilename = 'placeholder.png';
+if (file_exists(ROOTDIR . '/assets/img/logo.png')) {
+    $logoFilename = 'logo.png';
+} elseif (file_exists(ROOTDIR . '/assets/img/logo.jpg')) {
+    $logoFilename = 'logo.jpg';
+}
+$pdf->Image(ROOTDIR . '/assets/img/' . $logoFilename, 15, 25, 75);
+//echo $payto;
+//die;
+if (file_exists(dirname(dirname(__DIR__))) . '/modules/addons/gsttax/classes/class.php') {
+    require_once dirname(dirname(__DIR__)) . '/modules/addons/gsttax/classes/class.php';
+
+    $GST_TAX = new GST_TAX();
+
+    $gstIn = $GST_TAX->getAddonModuleSetting('gst_in');
+    $oldTaxNumber = $GST_TAX->getAddonModuleSetting('old_tax_number');
+    $sacCode = $GST_TAX->getAddonModuleSetting('hsn_code');
+    $count = $GST_TAX->getAddonModuleSetting();
+
+    if (isset($_GET['id']) && !empty($_GET['id']))
+        $invoiceId = $_GET['id'];
+    else {
+        $invoiceId = $id;
+    }
+
+    if (isset($invoiceId) && !empty($invoiceId)) {
+        if (!empty($invoiceId)) {
+            $data = Capsule::table('tblinvoices')->where('id', $invoiceId)->get();
+            if ((float) $data[0]->tax > 0 || (float) $data[0]->tax2 > 0) {
+                $currencyData = getCurrency($data[0]->userid);
+                $totalTaxInt = (float) $data[0]->tax + (float) $data[0]->tax2;
+                $totalTax = formatCurrency($totalTaxInt, $currencyData['id']);
+            }
+            $invoiceData = (array) $data[0];
+            $invoiceDate = date("d-m-Y", strtotime($invoiceData['date']));
+            if (strtotime($invoiceDate) <= strtotime('30-06-2017')) {
+                $taxlabel1 = $GST_TAX->getAddonModuleSetting('taxlabel1');
+                $taxlabel2 = $GST_TAX->getAddonModuleSetting('taxlabel2');
+            } else {    
+                $getGstInvoice = $GST_TAX->GstGetGstInoive('i-' . $invoiceId);
+                if ($getGstInvoice['taxname']){
+                    $taxname = $getGstInvoice['taxname'];
+                } else {
+                    if ($taxrate) {
+                    $taxname = $GST_TAX->gstGetTaxName($taxrate, 1);
+                    }
+                }
+                if ($getGstInvoice['taxname2']){
+                    $taxname2 = $getGstInvoice['taxname2'];
+                }else {
+                    if ($taxrate2) {
+                        $taxname2 = $GST_TAX->gstGetTaxName($taxrate2, 2);
+                    }
+                }
+            }
+        }
+    }
+}
+ 
+$clientCountry = Capsule::table('tblclients')->where('id', $data[0]->userid)->first();
+# Tax invoice Heading
+if ($clientCountry->country == 'IN') {
+    if ($count > 0 && file_exists(dirname(dirname(__DIR__)) . '/modules/addons/gsttax/gsttax.php') && strtotime($invoiceDate) > strtotime('30-06-2017') && ($taxname == 'IGST' || $taxname == 'CGST' || $taxname == 'SGST' )) {
+    $getEnableProformaInvoicing = $GST_TAX->gstGetEnableProformaInvoicing();
+        if ($getEnableProformaInvoicing['value'] == '1' && $status == 'Paid') {
+            $pdf->SetFont($pdfFont, '', 15);
+            $pdf->SetXY(12, 12);
+            $pdf->Cell(0, 15, 'TAX INVOICE', 0, false, 'C', 0, '', 0, false, 'M', 'T');
+        }elseif($getEnableProformaInvoicing['value'] != '1'){
+            $pdf->SetFont($pdfFont, '', 15);
+            $pdf->SetXY(12, 12);
+            $pdf->Cell(0, 15, 'TAX INVOICE', 0, false, 'C', 0, '', 0, false, 'M', 'T');
+        }
+    }
+}
+
+# Invoice Status
+$pdf->SetXY(0, 0);
+$pdf->SetFont($pdfFont, 'B', 28);
+$pdf->SetTextColor(255);
+$pdf->SetLineWidth(0.75);
+$pdf->StartTransform();
+$pdf->Rotate(-35, 100, 225);
+if ($status == 'Draft') {
+    $pdf->SetFillColor(200);
+    $pdf->SetDrawColor(140);
+} elseif ($status == 'Paid') {
+    $pdf->SetFillColor(151, 223, 74);
+    $pdf->SetDrawColor(110, 192, 70);
+} elseif ($status == 'Cancelled') {
+    $pdf->SetFillColor(200);
+    $pdf->SetDrawColor(140);
+} elseif ($status == 'Refunded') {
+    $pdf->SetFillColor(131, 182, 218);
+    $pdf->SetDrawColor(91, 136, 182);
+} elseif ($status == 'Collections') {
+    $pdf->SetFillColor(3, 3, 2);
+    $pdf->SetDrawColor(127);
+} else {
+    $pdf->SetFillColor(223, 85, 74);
+    $pdf->SetDrawColor(171, 49, 43);
+}
+$pdf->Cell(100, 18, strtoupper(Lang::trans('invoices' . strtolower($status))), 'TB', 0, 'C', '1');
+$pdf->StopTransform();
+$pdf->SetTextColor(0);
+
+# Company Details
+$pdf->SetXY(15, 42);
+$pdf->SetFont($pdfFont, '', 13);
+foreach ($companyaddress as $addressLine) {
+    $pdf->Cell(180, 4, trim($addressLine), 0, 1, 'R');
+    $pdf->SetFont($pdfFont, '', 9);
+}
+
+$addonActive = false;
+$oldVat = false;
+if ($clientCountry->country == 'IN') {
+if ($count > 0 && file_exists(dirname(dirname(__DIR__)) . '/modules/addons/gsttax/gsttax.php') && strtotime($invoiceDate) > strtotime('30-06-2017') && ($taxname == 'IGST' || $taxname == 'CGST' || $taxname == 'SGST' )) {
+$addonActive = true;
+$clientDetail = $GST_TAX->gstGetClientDetail($invoiceData['userid']);
+    if (!empty($clientDetail['currency'])){
+        $currencyId = $clientDetail['currency'];
+    } else {
+        $currenyIdQuery = Capsule::table('tblcurrencies')->where('default', '1')->first();
+        $currencyId = $currenyIdQuery->id;
+    }
+    $getCurrencyCode = $GST_TAX->gstGetCurrencyCode($currencyId);
+    if ((float) $invoiceData['credit'] > 0) {
+        $wgs_gst_credit = formatCurrency($invoiceData['credit'], $currencyId);
+        $creditDetail = $GST_TAX->wgsGstGetAppliedCreditDetail($invoiceData['id'], $invoiceData['credit'], $invoiceData['userid']);
+        $transsactionCount = count($transactions);
+        $date = date_create($creditDetail['date']);
+        if ($transsactionCount > 0){
+            $transactions[$transsactionCount] = array(
+                'id' => $creditDetail['id'],
+                'date' => date_format($date, "d/m/Y"),
+                'gateway' => 'Funds Applied',
+                'transid' => ' ',
+                'amount' => formatCurrency($invoiceData['credit'], $currencyId)
+            );
+        } else {
+            $transactions[0] = array(
+                'id' => $creditDetail['id'],
+                'date' => date_format($date, "d/m/Y"),
+                'gateway' => 'Funds Applied',
+                'transid' => ' ',
+                'amount' => formatCurrency($invoiceData['credit'], $currencyId)
+            );
+        }
+           
+        $wgs_gst_invoicetotal = formatCurrency(($invoiceData['tax'] + $invoiceData['tax2'] + $invoiceData['subtotal']), $currencyId);
+        $invoiceData['total'] = ($invoiceData['tax'] + $invoiceData['tax2'] + $invoiceData['subtotal']);
+    }
+    $totalAmountInWords = $GST_TAX->GstNumberToWords($invoiceData['total']);
+    $sign_image = $GST_TAX->gstGetSign();
+
+$pdf->Ln(2);
+$pdf->SetFont($pdfFont, '', 10);
+$pdf->Cell(180, 6, 'GSTIN' . ': ' . $gstIn, 0, 1, 'R');
+$pdf->Ln(5);
+/* $pdf->Ln(5);
+$pdf->SetXY(15, 55);
+$pdf->SetFillColor(239);
+$pdf->SetFont($pdfFont, '', 10);
+$pdf->Cell(65, 6, 'GSTIN' . ': ' . $gstIn, 10, 1, 'L', '1');
+$pdf->Ln(10); */
+} elseif ($count > 0 && file_exists(dirname(dirname(__DIR__)) . '/modules/addons/gsttax/gsttax.php') && strtotime($invoiceDate) <= strtotime('30-06-2017')) {
+$addonActive = true;
+$oldVat = true;
+if ($oldTaxNumber) {
+$pdf->Ln(2);
+$pdf->SetFont($pdfFont, '', 10);
+$pdf->Cell(180, 6, 'Service tax number' . ': ' . $oldTaxNumber, 0, 1, 'R');
+$pdf->Ln(5);
+/* $pdf->Ln(5);
+$pdf->SetXY(15, 55);
+$pdf->SetFillColor(239);
+$pdf->SetFont($pdfFont, '', 10);
+$pdf->Cell(60, 6, 'Service tax number' . ': ' . $oldTaxNumber, 10, 1, 'L', '1');
+$pdf->Ln(10); */
+} else {
+$pdf->Ln(5);
+}
+}
+}
+# Header Bar
+/**
+* Invoice header
+*
+* You can optionally define a header/footer in a way that is repeated across page breaks.
+* For more information, see http://docs.whmcs.com/PDF_Invoice#Header.2FFooter
+*/
+
+$pdf->Ln(2);
+if($status == "Refunded" || $status == "Paid")
+    $pagetitle = str_replace("Proforma ", "", $pagetitle);
+
+$pdf->SetFont($pdfFont, 'B', 15);
+$pdf->SetFillColor(239);
+$pdf->Cell(0, 8, $pagetitle, 0, 1, 'L', '1');
+$pdf->SetFont($pdfFont, '', 10);
+if($status == 'Paid')
+$pdf->Cell(0, 6, Lang::trans('invoicesdatecreated') . ': ' . substr($datepaid,0,10), 0, 1, 'L', '1');
+else
+$pdf->Cell(0, 6, Lang::trans('invoicesdatecreated') . ': ' . $datecreated, 0, 1, 'L', '1');
+$pdf->Cell(0, 6, Lang::trans('invoicesdatedue') . ': ' . $duedate, 0, 1, 'L', '1');
+$pdf->Ln(5);
+
+$startpage = $pdf->GetPage();
+
+# Clients Details
+$addressypos = $pdf->GetY();
+$pdf->SetFont($pdfFont, 'B', 10);
+$pdf->Cell(0, 4, Lang::trans('invoicesinvoicedto'), 0, 1);
+$pdf->SetFont($pdfFont, '', 9);
+if ($clientsdetails["companyname"]) {
+$pdf->Cell(0, 4, $clientsdetails["companyname"], 0, 1, 'L');
+$pdf->Cell(0, 4, Lang::trans('invoicesattn') . ': ' . $clientsdetails["firstname"] . ' ' . $clientsdetails["lastname"], 0, 1, 'L');
+} else {
+$pdf->Cell(0, 4, $clientsdetails["firstname"] . " " . $clientsdetails["lastname"], 0, 1, 'L');
+}
+$pdf->Cell(0, 4, $clientsdetails["address1"], 0, 1, 'L');
+if ($clientsdetails["address2"]) {
+$pdf->Cell(0, 4, $clientsdetails["address2"], 0, 1, 'L');
+}
+$pdf->Cell(0, 4, $clientsdetails["city"] . ", " . $clientsdetails["state"] . ", " . $clientsdetails["postcode"], 0, 1, 'L');
+$pdf->Cell(0, 4, $clientsdetails["country"], 0, 1, 'L');
+if (!empty($clientsdetails['tax_id'])){
+$pdf->Cell(0, 4, "Vat Number"." ".$clientsdetails["tax_id"], 0, 1, 'L');
+
+}
+
+
+if ($customfields) {
+$pdf->Ln();
+
+$gst_in = 'no';
+if (!empty($addonActive) && empty($oldVat)) {
+foreach ($customfields as $customfield) {
+if ($customfield['fieldname'] == 'GSTIN')
+$gst_in = 'yes';
+if ($customfield['fieldname'] == 'GSTIN' || $customfield['fieldname'] == 'Place of supply') {
+    if (!empty($clientsdetails['tax_id']) &&  $customfield['fieldname'] == 'GSTIN')
+    {
+    }
+    else
+    {
+    $pdf->Cell(0, 4, $customfield['fieldname'] . ': ' . $customfield['value'], 0, 1, 'L');  
+    }
+} else {
+$pdf->Cell(0, 4, $customfield['fieldname'] . ': ' . $customfield['value'], 0, 1, 'L');
+}
+if ($gst_in == 'no' && empty($clientsdetails['tax_id'])) {
+$pdf->Cell(0, 4, 'GSTIN: Not Available', 0, 1, 'L');
+}
+}
+} else {
+foreach ($customfields as $customfield) {
+if ($customfield['fieldname'] != 'GSTIN' && $customfield['fieldname'] != 'Place of supply') {
+$pdf->Cell(0, 4, $customfield['fieldname'] . ': ' . $customfield['value'], 0, 1, 'L');
+}
+}
+}
+} else {
+if (!empty($addonActive)) {
+$pdf->Cell(0, 4, 'GSTIN: Not Available', 0, 1, 'L');
+}
+}
+$pdf->Ln(10);
+
+$invoiceDetails = $helper->GetInvoiceDetails($invoiceId);
+if ($invoiceDetails->status == "Unpaid") {
+    //get partial details and added partail
+    $partial_payment_Record = $helper->GetPartialPaymentDetails($invoiceId);
+    if ($partial_payment_Record->value == "on") {
+        $partialAmount = $partial_payment_Record->total_amount;
+        $partial_amounts = $partial_payment_Record->partial_amount;
+        $userId = $invoiceDetails->userid;
+        $total_credit = $invoiceDetails->credit;
+        $pay_amount_total = $helper->GetPartialPaymentTotal($invoiceId, $userId);
+        if ($pay_amount_total) {
+            $totalAmount = $partialAmount - $pay_amount_total ;
+        } else {
+            $totalAmount = $partialAmount;
+        }
+        $currencyData = getCurrency($userId);
+        $prefix = $currencyData['prefix'];
+        $suffix = $currencyData['suffix'];
+        if ($partial_amounts > "0.00") {
+            $total_due_amount = number_format(($totalAmount - $partial_amounts-$total_credit), 2, '.', '');
+            $partailhtml = '
+                <tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+                    <td align="right">Payable Amount</td>
+                    <td align="center">' . $prefix . $partial_amounts. $suffix . '</td>
+                </tr>
+                <tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+                    <td align="right">Total Due Amount</td>
+                    <td align="center">' . $prefix . $total_due_amount . $suffix . '</td>
+                </tr>';
+            $balance = $prefix . number_format($totalAmount-$total_credit, 2, '.', '') . $suffix;
+            $total = $prefix . $partialAmount-$total_credit . $suffix;
+        }
+    }
+}
+
+if (!empty($addonActive) && empty($oldVat) && ($taxname == 'IGST' || $taxname == 'CGST' || $taxname == 'SGST' )) {
+$tblhtml = '<h3>Invoice Items</h3><table width="100%" bgcolor="#ccc" cellspacing="0" cellpadding="3" border="1px">
+
+<tr height="30" bgcolor="#efefef">
+<td style="vertical-align: bottom; " width="35%"><strong>' . Lang::trans('invoicesdescription') . '</strong></td>
+<td style="vertical-align: bottom; " width="25%"><strong>Item type</strong></td>
+<td style="vertical-align: bottom; " width="25%"><strong>SAC Code</strong></td>
+<!--<td style="border: 1px solid #ddd;" width="7%">' . Lang::trans('invoicescredit') . '</td>-->
+<td width="15%"><strong>' . Lang::trans('quotelinetotal') . '</strong></td>
+</tr> ';
+foreach ($invoiceitems as $key => $item) {
+$tblhtml .= '<tr height="30" bgcolor="#fff">
+<td  width="35%">' . nl2br($item['description']) . '</td>
+<td  width="25%">';
+if (strpos(nl2br(strtolower($item['description'])), 'website design') !== false)
+$tblhtml .= 'Website Design';
+elseif (strpos(nl2br(strtolower($item['description'])), 'web development') !== false)
+$tblhtml .= 'Web Development';
+elseif (strpos(nl2br(strtolower($item['description'])), 'seo') !== false)
+$tblhtml .= 'SEO';
+elseif (strpos(nl2br(strtolower($item['description'])), 'amc') !== false)
+$tblhtml .= 'AMC';
+else
+$tblhtml .= $item['type'];
+$tblhtml .= '</td>
+<td  width="25%">';
+if (strpos(nl2br(strtolower($item['description'])), 'website design') !== false || strpos(nl2br(strtolower($item['description'])), 'web development') !== false || strpos(nl2br(strtolower($item['description'])), 'seo') !== false || strpos(nl2br(strtolower($item['description'])), 'amc') !== false)
+$tblhtml .= '998314';
+elseif ($item['type'] == 'Hosting')
+$tblhtml .= '998315';
+elseif ($item['type'] == 'PromoHosting' || $item['type'] == 'DomainHosting' || $item['type'] == 'AddFunds')
+$tblhtml .= '';
+elseif (strpos($item['type'], 'Domain') !== false || strpos($item['type'], 'Addon') !== false)
+$tblhtml .= '998319';
+else
+$tblhtml .= '998313';
+$tblhtml .= '</td>
+<td  width="15%">' . $item['amount'] . '</td>
+</tr>  ';
+}
+$tblhtml .= '<tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+<td align="right"  width="35%">' . Lang::trans('invoicessubtotal') . '</td>
+<td colspan="2"  width="50%"></td>
+<td  width="15%">' . $subtotal . '</td>
+</tr>
+<tr height="30" bgcolor="#fff">
+<td align="right" width="35%" style="vertical-align: middle;"><strong>GST</strong></td>
+<td colspan="2" width="50%">
+<table width="100%" bgcolor="#ccc" cellspacing="0" cellpadding="3" border="1px" bordercolor="#ccc">
+<tr bgcolor="#efefef">
+<td width="33.3%"><strong>CGST';
+if ($taxrate && $taxname == 'CGST') {
+$tblhtml .= ' (' . $taxrate . '%)';
+} else {
+$nbsp;
+}
+$tblhtml .= '</strong></td>
+<td width="33.3%"><strong>SGST';
+if ($taxrate2 && $taxname2 == 'SGST') {
+$tblhtml .= ' (' . $taxrate2 . '%)';
+} else {
+$nbsp;
+}
+$tblhtml .= '</strong></td>
+<td width="33.3%"><strong>IGST';
+if ($taxrate && $taxname == 'IGST') {
+$tblhtml .= ' (' . $taxrate . '%)';
+} else {
+$nbsp;
+}
+$tblhtml .= '</strong></td>
+</tr>
+<tr bgcolor="#fff">
+<td width="33.3%">';
+if ($taxrate && $taxname == 'CGST') {
+$tblhtml .= $tax;
+} else {
+$nbsp;
+}
+$tblhtml .= '</td>
+<td width="33.3%">';
+if ($taxrate2 && $taxname2 == 'SGST') {
+$tblhtml .= $tax2;
+} else {
+$nbsp;
+}
+$tblhtml .= '</td>
+<td width="33.3%">';
+if ($taxrate && $taxname == 'IGST') {
+$tblhtml .= $tax;
+} else {
+$nbsp;
+}
+$tblhtml .= '</td>
+</tr>
+</table>
+</td>
+<td width="15%" align="middle">' . $totalTax . '</td>
+</tr>
+<tr bgcolor="#efefef" height="30" style="font-weight:bold;">
+<td align="right"  width="35%">Total Amount Incl. GST :</td>
+<td width="50%" colspan="2">&nbsp;</td>';
+if (isset($wgs_gst_invoicetotal) && !empty($wgs_gst_invoicetotal))
+$tblhtml .= '<td width="15%" align="left">' . $wgs_gst_invoicetotal . '</td>';
+else
+$tblhtml .= '<td width="15%" align="left">' . $total . '</td>';
+$tblhtml .= '</tr>';
+if ($totalAmountInWords && $getCurrencyCode == 'INR') {
+$tblhtml .= '<tr bgcolor="#efefef" height="30" style="font-weight:bold;">
+<td align="right"  width="35%">Total Amount Incl. GST (in words):</td>
+<td colspan="3" width="65%" align="right">' . $totalAmountInWords . '</td>
+</tr>';
+}
+$tblhtml .='
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+<td align="right"  width="35%"><strong>Funds Applied</strong></td>
+<td colspan="2"  width="50%"></td>
+<td  width="15%">' . $credit . '</td>
+</tr>';
+$tblhtml .= $partailhtml;
+$tblhtml .= '</table><br/>';
+//echo $tblhtml;exit;
+} else {
+# Invoice Items
+$tblhtml .= '<table width="100%" bgcolor="#ccc" cellspacing="1" cellpadding="1" border="0">
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;text-align:center;">
+<td width="80%">' . Lang::trans('invoicesdescription') . '</td>
+<td width="20%">' . Lang::trans('quotelinetotal') . '</td>
+</tr>';
+foreach ($invoiceitems as $item) {
+$tblhtml .= '
+<tr bgcolor="#fff">
+<td align="left">' . nl2br($item['description']) . '<br /></td>
+<td align="center">' . $item['amount'] . '</td>
+</tr>';
+}
+$tblhtml .= '
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+<td align="right">' . Lang::trans('invoicessubtotal') . '</td>
+<td align="center">' . $subtotal . '</td>
+</tr>';
+
+if ($taxname) {
+$tblhtml .= '
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">';
+if (!empty($addonActive) && !empty($oldVat))
+$tblhtml .= '<td align="right">' . $taxlabel1 . '</td>';
+else
+$tblhtml .= '<td align="right">' . $taxrate . '% ' . $taxname . '</td>';
+$tblhtml .= '<td align="center">' . $tax . '</td>
+</tr>';
+}
+
+if ($taxname2) {
+$tblhtml .= '
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">';
+if (!empty($addonActive) && !empty($oldVat))
+$tblhtml .= '<td align="right">' . $taxlabel2 . '</td>';
+else
+$tblhtml .= '<td align="right">' . $taxrate2 . '% ' . $taxname2 . '</td>';
+$tblhtml .= '<td align="center">' . $tax2 . '</td>
+</tr>';
+}
+$tblhtml .= '
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+<td align="right">' . Lang::trans('invoicescredit') . '</td>
+<td align="center">' . $credit . '</td>
+</tr>
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+<td align="right">' . Lang::trans('invoicestotal') . '</td>
+<td align="center">' . $total . '</td>
+</tr>';
+
+$tblhtml .= $partailhtml;
+$tblhtml .= '</table>';
+}
+$pdf->writeHTML($tblhtml, true, false, false, false, '');
+
+$pdf->Ln(3);
+
+# Transactions
+$pdf->SetFont($pdfFont, 'B', 12);
+$pdf->Cell(0, 4, Lang::trans('invoicestransactions'), 0, 1);
+
+$pdf->Ln(3);
+
+$pdf->SetFont($pdfFont, '', 9);
+
+$tblhtml = '<table width="100%" bgcolor="#ccc" cellspacing="1" cellpadding="2" border="0">
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;text-align:center;">
+<td width="25%">' . Lang::trans('invoicestransdate') . '</td>
+<td width="25%">' . Lang::trans('invoicestransgateway') . '</td>
+<td width="30%">' . Lang::trans('invoicestransid') . '</td>
+<td width="20%">' . Lang::trans('invoicestransamount') . '</td>
+</tr>';
+
+if (count($transactions)) {
+foreach ($transactions AS $trans) {
+$tblhtml .= '
+<tr bgcolor="#fff">
+<td align="center">' . $trans['date'] . '</td>
+<td align="center">' . $trans['gateway'] . '</td>
+<td align="center">' . $trans['transid'] . '</td>
+<td align="center">' . $trans['amount'] . '</td>
+</tr>';
+}
+$tblhtml .= '
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+<td colspan="3" align="right">' . Lang::trans('invoicesbalance') . '</td>
+<td align="center">' . $balance . '</td>
+</tr></table>';
+}else{
+    
+$tblhtml.= '<tr  style="text-align:center;"><td colspan = "4" >No Related Transactions Found</td></tr>
+<tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+<td colspan="3" align="right">' . Lang::trans('invoicesbalance') . '</td>
+<td align="center">' . $balance . '</td>
+</tr></table>';
+}
+
+
+
+
+if (!empty($sign_image)) {
+$tblhtml .= '<br/><br/><table><tr bgcolor="#fff">
+<td colspan="4" align="right">
+<img width="80px" height="40px" src="' . $sign_image . '"><br/>Authorized Signatory
+</td>
+</tr></table>';
+}
+
+
+//echo $tblhtml;die();
+$pdf->writeHTML($tblhtml, true, false, false, false, '');
+
+# Bank Details
+
+$pdf->SetFont($pdfFont, 'B', 12);
+$pdf->Cell(0, 4,'Bank Detail', 0, 1);
+$pdf->Ln(2);
+
+$tblhtmlbank = '<table width="100%" bgcolor="#fff" cellspacing="1" cellpadding="2" border="0">';
+
+
+$pdf->SetFont($pdfFont, '', 10);
+$tblhtmlbank .= '<tr><td style="font-weight:bold;">Bank Name: </td><td>HDFC Bank</td></tr>
+<tr><td style="font-weight:bold;">Account Name: </td><td>WHMCS GLOBAL SERVICES PRIVATE LIMITED</td></tr>
+<tr><td style="font-weight:bold;">Account Number: </td><td>50200049543900</td></tr>
+<tr><td style="font-weight:bold;">Branch Name: </td><td>Phase 7 , Mohali-160055 , Punjab</td></tr>
+<tr><td style="font-weight:bold;">Swift Code: </td><td>HDFC-INBB</td></tr>
+<tr><td style="font-weight:bold;">IFSC Code: </td><td>HDFC0001307</td></tr>
+
+</table>';
+$pdf->writeHTML($tblhtmlbank, true, false, false, false, '');
+
+# Refund Policy
+$pdf->SetFont($pdfFont, 'B', 12);
+$pdf->Cell(0, 4,'Refund Policy', 0, 1);
+$pdf->Ln(2);
+ 
+$tblhtmlrefund = '<table width="100%" bgcolor="#fff" cellspacing="1" cellpadding="2" border="0">
+<tr>
+<td align="left" style="font-weight:bold;">10 Days Money Back Guarantee</td>
+</tr>';
+$pdf->SetFont($pdfFont, '', 9);
+
+$tblhtmlrefund .= '<tr>
+	<td>All purchases at whmcsglobalservices.com via Paypal are covered by our “10 days No Questions Asked Refund Policy”. If you are not convinced, you can ask for a refund, which would be fully processed back for you, no questions asked in 48hrs.</td>
+</tr>
+<tr>
+	<td>To whom we can’t refund?</td>
+</tr>
+<tr>
+	<td>If you fall into one or more of the below, we’re sorry: You are NOT eligible for a Refund.</td>
+</tr>
+<tr>
+	<td>- Refund is not applicable after 10 days since the date of your purchase.</td>
+</tr>
+<tr>
+	<td>- Refund amount is equal to the membership fee minus the discount (if any).</td>
+</tr>
+<tr>
+	<td>- Refund is not applicable on renewals.</td>
+</tr>
+<tr>
+	<td>- Refund is not applicable for existing customers.</td>
+</tr>
+<tr>
+	<td>- Refund is applicable for Paypal payment only.</td>
+</tr>
+<tr>
+	<td>- Bulk Orders with multiple products purchased on discounts are not refundable.</td>
+</tr>
+<tr>
+	<td>- Refund would be denied in abuse cases, with abnormally high numbers of downloads within the 10 days.</td>
+</tr>
+<tr>
+	<td>- Services like Custom development, WHMCS or Module installation, migration service, WHMCS or Module upgrades are non-refundable.</td>
+</tr>
+<tr>
+	<td>- ClientX & HostX WHMCS theme product is non refundable. Since we are providing a demo so user can test it in the demo version before purchasing and if still, they have any queries they can contact us via live chat or open ticket.</td>
+</tr>
+<tr>
+	<td>- No refunds are applicable on any version of our WHMCS One Step Checkout Orderform and Vuejs Checkout Template. Kindly check the demo before completing your purchase.</td>
+</tr>
+<tr>
+	<td>- All open source code versions are non-refundable.</td>
+</tr>
+</table>';
+$pdf->writeHTML($tblhtmlrefund, true, false, false, false, '');
+
+# Notes
+if ($notes) {
+$pdf->Ln(5);
+$pdf->SetFont($pdfFont, '', 8);
+$pdf->MultiCell(170, 5, Lang::trans('invoicesnotes') . ': ' . $notes);
+}
+
+if ($data[0]->userid) {
+$clientCountry = Capsule::table('tblclients')->where('id', $data[0]->userid)->first();
+# Tax invoice Heading
+if ($clientCountry->country == 'IN') {
+if ($count > 0 && file_exists(dirname(dirname(__DIR__)) . '/modules/addons/gsttax/gsttax.php') && strtotime($invoiceDate) > strtotime('30-06-2017') && ($taxname == 'IGST' || $taxname == 'CGST' || $taxname == 'SGST' )) {
+$getEnableProformaInvoicing = $GST_TAX->gstGetEnableProformaInvoicing();
+if ($getEnableProformaInvoicing['value'] == '1' && $status != 'Paid') {
+$pdf->SetFont($pdfFont, '', 8);
+$pdf->Ln(5);
+$pdf->Cell(180, 4, 'The invoice is computer generated invoice as proforma invoice and can not be used for tax purpose.', '', '', 'C');
+}
+}
+}
+}
+# Generation Date
+$pdf->SetFont($pdfFont, '', 8);
+$pdf->Ln(5);
+$pdf->Cell(180, 4, Lang::trans('invoicepdfgenerated') . ' ' . getTodaysDate(1), '', '', 'C');
+
+/**
+* Invoice footer
+*/
